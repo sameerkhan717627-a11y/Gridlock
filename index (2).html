@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#07060d">
+<title>GRIDLOCK: MIND BATTLE</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800&family=Rajdhani:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07060d; --panel:#120f1f; --line:#2a2440;
+  --blue:#2ec8ff; --pink:#ff3d9a; --gold:#ffd166; --green:#5cffb0; --violet:#b58cff;
+  --text:#ece9f7; --muted:#8e87ab;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{height:100%;background:var(--bg);color:var(--text);font-family:'Rajdhani',system-ui,sans-serif;overflow:hidden;user-select:none;-webkit-user-select:none}
+body{background:radial-gradient(ellipse at 50% -10%,#241a44 0%,var(--bg) 62%)}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;background:repeating-linear-gradient(0deg,transparent 0 3px,rgba(255,255,255,.012) 3px 4px)}
+h1,h2,.display{font-family:'Orbitron',system-ui,sans-serif;letter-spacing:.08em}
+
+.screen{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;overflow-y:auto;padding:max(14px,env(safe-area-inset-top)) 16px max(14px,env(safe-area-inset-bottom));gap:14px}
+.screen.active{display:flex}
+
+/* MENU */
+.menu-inner{margin:auto;display:flex;flex-direction:column;align-items:center;gap:14px;width:100%;max-width:360px;padding:12px 0}
+.logo{text-align:center;margin-bottom:8px}
+.logo h1{font-size:2.4rem;font-weight:800;background:linear-gradient(90deg,var(--blue),#fff 50%,var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 0 12px rgba(160,90,255,.4))}
+.logo .sub{font-family:'Orbitron',sans-serif;font-size:.85rem;letter-spacing:.45em;color:var(--muted);margin-top:6px}
+.menu-btns{display:flex;flex-direction:column;gap:12px;width:100%}
+.login-row{display:flex;flex-direction:column;align-items:center;gap:8px;width:100%}
+.user-label{font-size:.95rem;color:var(--muted);text-align:center}
+.note{min-height:1.2em;text-align:center;color:var(--gold);font-size:1rem;max-width:340px}
+.join{display:flex;gap:8px;width:100%}
+.join input{flex:1;min-width:0;font-family:'Orbitron',sans-serif;font-size:.9rem;text-transform:uppercase;letter-spacing:.2em;text-align:center;padding:12px;border-radius:12px;background:#0d0a18;border:1px solid var(--line);color:var(--text);user-select:text;-webkit-user-select:text}
+.join input:focus{outline:none;border-color:var(--violet);box-shadow:0 0 10px rgba(181,140,255,.4)}
+
+/* BUTTONS */
+.btn{font-family:'Orbitron',sans-serif;font-weight:600;font-size:.85rem;letter-spacing:.06em;min-height:52px;padding:12px 16px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer;width:100%;transition:transform .12s,box-shadow .25s,background .25s;touch-action:manipulation}
+.btn:active{transform:scale(.96)}
+.btn:disabled{opacity:.35;cursor:not-allowed}
+.btn.blue{color:var(--blue);border-color:rgba(46,200,255,.55);box-shadow:0 0 12px rgba(46,200,255,.2)}
+.btn.pink{color:var(--pink);border-color:rgba(255,61,154,.55);box-shadow:0 0 12px rgba(255,61,154,.2)}
+.btn.on{background:rgba(255,255,255,.09);box-shadow:0 0 16px rgba(255,255,255,.22)}
+.btn.small{min-height:44px;font-size:.75rem;width:auto;padding:10px 14px}
+.icon-btn{font-family:'Orbitron',sans-serif;font-size:.8rem;width:44px;height:44px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03);color:var(--text);cursor:pointer}
+
+/* PANELS */
+.panel{width:100%;max-width:380px;background:rgba(18,15,31,.85);border:1px solid var(--line);border-radius:18px;padding:18px;display:flex;flex-direction:column;gap:12px}
+.panel h2{font-size:1.1rem;color:var(--text);text-align:center}
+.panel p,.panel li{font-size:1.05rem;line-height:1.45;color:#cfcbe3}
+.panel ul{padding-left:20px;display:flex;flex-direction:column;gap:6px}
+.field{display:flex;flex-direction:column;gap:6px;font-size:.95rem;color:var(--muted)}
+.field input{font-family:'Rajdhani',sans-serif;font-size:1.1rem;font-weight:600;padding:10px 12px;border-radius:10px;background:#0d0a18;border:1px solid var(--line);color:var(--text);user-select:text;-webkit-user-select:text}
+.field input:focus{outline:none;border-color:var(--violet)}
+.field.blue input{color:var(--blue)}
+.field.pink input{color:var(--pink)}
+.score-row{display:flex;justify-content:space-between;font-size:1.05rem;padding:6px 0;border-bottom:1px solid var(--line)}
+.back-row{width:100%;max-width:380px}
+.room-code{font-family:'Orbitron',sans-serif;font-size:2rem;font-weight:800;letter-spacing:.3em;color:var(--gold);text-shadow:0 0 14px rgba(255,209,102,.5);min-height:2.4rem}
+.res-sub{text-align:center;color:#cfcbe3;font-size:1.05rem}
+
+/* GAME HUD */
+#game{justify-content:flex-start}
+.hud-top{width:100%;max-width:420px;display:flex;align-items:center;gap:10px}
+.hud-top .titles{flex:1;text-align:center;min-width:0}
+.turn{font-family:'Orbitron',sans-serif;font-size:.95rem;font-weight:800;letter-spacing:.08em}
+.turn.blue{color:var(--blue);text-shadow:0 0 10px rgba(46,200,255,.6)}
+.turn.pink{color:var(--pink);text-shadow:0 0 10px rgba(255,61,154,.6)}
+.sub-line{font-size:.95rem;color:var(--muted);margin-top:2px}
+.players{width:100%;max-width:420px;display:flex;gap:10px}
+.pcard{flex:1;min-width:0;border-radius:14px;padding:9px 10px;background:rgba(18,15,31,.85);border:1px solid var(--line);transition:box-shadow .3s,border-color .3s;opacity:.85}
+.pcard.active{opacity:1}
+.pcard.blue{border-color:rgba(46,200,255,.35)}
+.pcard.pink{border-color:rgba(255,61,154,.35)}
+.pcard.active.blue{box-shadow:0 0 18px rgba(46,200,255,.45);border-color:var(--blue)}
+.pcard.active.pink{box-shadow:0 0 18px rgba(255,61,154,.45);border-color:var(--pink)}
+.pcard .pname{font-family:'Orbitron',sans-serif;font-size:.8rem;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pcard.blue .pname{color:var(--blue)}
+.pcard.pink .pname{color:var(--pink)}
+.pcard .stat{font-size:.9rem;color:#c9c5dd;margin-top:3px;white-space:nowrap}
+
+.board-wrap{width:min(92vw,400px);padding:8px;border-radius:18px;background:rgba(14,11,26,.9);border:1px solid var(--line);box-shadow:0 0 34px rgba(120,80,255,.18)}
+.board{position:relative;display:grid;grid-template-columns:repeat(7,1fr);grid-template-rows:repeat(7,1fr);width:100%;aspect-ratio:1;border-radius:12px;overflow:hidden}
+.cell{position:relative;background:#0d0a18;border:1px solid #1f1a33;display:flex;align-items:center;justify-content:center;font-size:clamp(16px,5.2vw,24px);cursor:pointer}
+.cell.exit-b{box-shadow:inset 0 0 0 2px rgba(46,200,255,.7)}
+.cell.exit-p{box-shadow:inset 0 0 0 2px rgba(255,61,154,.7)}
+.cell.hint{background:rgba(92,255,176,.12)}
+.cell.hint::after{content:"";position:absolute;width:20%;height:20%;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green);opacity:.85}
+.cell.wall{background:repeating-linear-gradient(45deg,#2a2344 0 6px,#17132a 6px 12px);box-shadow:inset 0 0 10px rgba(0,0,0,.7)}
+.cell.t-crystal{color:var(--gold);text-shadow:0 0 10px var(--gold)}
+.cell.t-bonus{color:#fff;text-shadow:0 0 12px var(--gold)}
+.cell.t-shield{color:var(--green);text-shadow:0 0 10px var(--green)}
+.cell.t-reveal{color:var(--violet);text-shadow:0 0 10px var(--violet)}
+.pawn{position:absolute;width:14.2857%;height:14.2857%;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:2;transition:left .35s cubic-bezier(.2,.8,.2,1),top .35s cubic-bezier(.2,.8,.2,1)}
+.pawn span{width:70%;height:70%;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Orbitron',sans-serif;font-weight:800;font-size:clamp(10px,3vw,14px);color:#07060d}
+.pawn.blue span{background:radial-gradient(circle at 35% 30%,#e3f8ff,var(--blue) 60%);box-shadow:0 0 14px var(--blue),0 0 26px rgba(46,200,255,.45)}
+.pawn.pink span{background:radial-gradient(circle at 35% 30%,#ffe3f0,var(--pink) 60%);box-shadow:0 0 14px var(--pink),0 0 26px rgba(255,61,154,.45)}
+
+.msg{width:100%;max-width:420px;min-height:44px;display:flex;align-items:center;justify-content:center;text-align:center;font-size:1.05rem;font-weight:600;color:#f3efff;padding:8px 12px;border-radius:12px;background:rgba(18,15,31,.7);border:1px solid var(--line)}
+.actions{width:100%;max-width:420px;display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.legend{font-size:.9rem;color:var(--muted);text-align:center}
+.mode-label{font-size:.9rem;color:var(--muted)}
+.badge{font-size:.85rem;color:var(--green);text-align:center;margin-top:2px}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(7,6,13,.82);z-index:50;padding:16px}
+.overlay.show{display:flex}
+.overlay .card{width:100%;max-width:340px;background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:22px;display:flex;flex-direction:column;gap:12px;box-shadow:0 0 40px rgba(120,80,255,.25)}
+.overlay h2{text-align:center;font-size:1.2rem}
+.res-title{text-align:center;font-family:'Orbitron',sans-serif;font-size:1.7rem;font-weight:800}
+.res-title.blue{color:var(--blue);text-shadow:0 0 16px rgba(46,200,255,.6)}
+.res-title.pink{color:var(--pink);text-shadow:0 0 16px rgba(255,61,154,.6)}
+.res-title.draw{color:var(--gold);text-shadow:0 0 16px rgba(255,209,102,.5)}
+
+@media (prefers-reduced-motion: reduce){ .pawn,.btn,.pcard{transition:none} }
+</style>
+</head>
+<body>
+
+<!-- MAIN MENU -->
+<section id="menu" class="screen active">
+  <div class="menu-inner">
+    <div class="logo">
+      <h1>GRIDLOCK</h1>
+      <div class="sub">MIND BATTLE</div>
+    </div>
+    <div class="login-row">
+      <div class="user-label" id="userLabel">Online ke liye Google se login karein</div>
+      <button class="btn small" id="btnLogin">Login with Google</button>
+    </div>
+    <div class="menu-btns">
+      <button class="btn blue" id="btnLocal">Local 2-Player</button>
+      <button class="btn" id="btnQuick">Online Quick Match</button>
+      <button class="btn" id="btnCreate">Create Private Room</button>
+      <div class="join">
+        <input id="roomCode" placeholder="ROOM CODE" maxlength="6" autocomplete="off" autocapitalize="characters">
+        <button class="btn pink small" id="btnJoin">Join</button>
+      </div>
+      <button class="btn" id="btnRules">How to Play</button>
+      <button class="btn" id="btnSettings">Settings &amp; Scoreboard</button>
+    </div>
+    <p class="note" id="menuNote"></p>
+  </div>
+</section>
+
+<!-- ONLINE WAITING / SEARCHING -->
+<section id="online" class="screen">
+  <div class="panel" style="margin-top:auto;text-align:center">
+    <h2 id="onlineTitle">ONLINE</h2>
+    <div class="room-code" id="onlineCode"></div>
+    <p class="res-sub" id="onlineStatus">Connecting…</p>
+    <button class="btn" id="btnCancelOnline">Cancel</button>
+  </div>
+</section>
+
+<!-- RULES -->
+<section id="rules" class="screen">
+  <div class="panel" style="margin-top:auto">
+    <h2>HOW TO PLAY</h2>
+    <ul>
+      <li>Blue starts bottom-left and must reach the top-left exit. Pink starts top-right and must reach the bottom-right exit.</li>
+      <li>Move one tile up, down, left or right. No diagonal moves. You cannot step onto the other player.</li>
+      <li>Collect 3 crystals (◆ = 1, ★ bonus = 2), then stand on YOUR exit to win.</li>
+      <li>On your turn you can Move or Place a Wall. Each player starts with 6 walls.</li>
+      <li>Walls can never block a player completely. Invalid walls are refused.</li>
+      <li>◈ Shield: lets you break one wall by moving into it.</li>
+      <li>◉ Scan: reveals your opponent's distance to their exit and crystal count.</li>
+      <li>Match lasts 80 turns. If nobody wins, the most crystals wins. Equal crystals = draw.</li>
+    </ul>
+  </div>
+  <div class="back-row"><button class="btn" data-go="menu">Back</button></div>
+</section>
+
+<!-- SETTINGS -->
+<section id="settings" class="screen">
+  <div class="panel" style="margin-top:auto">
+    <h2>SETTINGS</h2>
+    <label class="field blue">Blue player name
+      <input id="nameB" maxlength="12" value="Blue">
+    </label>
+    <label class="field pink">Pink player name
+      <input id="nameP" maxlength="12" value="Pink">
+    </label>
+    <button class="btn" id="btnMute">Sound: On</button>
+    <h2 style="margin-top:6px">SCOREBOARD (this device)</h2>
+    <div id="scoreList"></div>
+    <button class="btn small" id="btnResetScore" style="align-self:center">Reset Scoreboard</button>
+  </div>
+  <div class="back-row"><button class="btn" data-go="menu">Back</button></div>
+</section>
+
+<!-- GAME -->
+<section id="game" class="screen">
+  <div class="hud-top">
+    <button class="icon-btn" id="btnPause" aria-label="Pause">❚❚</button>
+    <div class="titles">
+      <div class="turn blue" id="turnLabel">BLUE'S TURN</div>
+      <div class="sub-line" id="turnCount">Turn 1 / 80</div>
+      <div class="badge" id="onlineBadge" style="display:none"></div>
+    </div>
+    <div style="width:44px"></div>
+  </div>
+
+  <div class="players">
+    <div class="pcard blue" id="cardB"></div>
+    <div class="pcard pink" id="cardP"></div>
+  </div>
+
+  <div class="board-wrap">
+    <div class="board" id="board">
+      <div class="pawn blue" id="pawnB"><span>B</span></div>
+      <div class="pawn pink" id="pawnP"><span>P</span></div>
+    </div>
+  </div>
+
+  <div class="msg" id="msg"></div>
+  <div class="mode-label" id="modeLabel">Move mode</div>
+
+  <div class="actions">
+    <button class="btn blue on" id="btnMove">Move</button>
+    <button class="btn" id="btnWall">Place Wall</button>
+    <button class="btn" id="btnScan">Scan</button>
+    <button class="btn" id="btnPass">Pass</button>
+  </div>
+  <div class="legend">◆ crystal · ★ bonus · ◈ shield · ◉ scan power</div>
+</section>
+
+<!-- RESULT -->
+<section id="result" class="screen">
+  <div class="panel" style="margin-top:auto;text-align:center">
+    <div class="res-title" id="resTitle">DRAW</div>
+    <p class="res-sub" id="resSub"></p>
+    <div id="resStats" style="font-size:1rem;color:#cfcbe3;margin-top:6px"></div>
+    <div style="display:flex;flex-direction:column;gap:12px;margin-top:10px">
+      <button class="btn blue" id="btnRematch">Rematch</button>
+      <button class="btn" id="btnResultMenu">Main Menu</button>
+    </div>
+  </div>
+</section>
+
+<!-- PAUSE OVERLAY -->
+<div class="overlay" id="pauseOv">
+  <div class="card">
+    <h2>PAUSED</h2>
+    <button class="btn blue" id="btnResume">Resume</button>
+    <button class="btn" id="btnRestart">Restart Match</button>
+    <button class="btn" id="btnQuit">Quit to Menu</button>
+  </div>
+</div>
+
+<!-- Firebase (pinned version) -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+
+<script>
+/* ===== FIREBASE CONFIG (project: gridlock-mind-battle2) ===== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCPGW-RMi13c9vMESIjx9Ixsy2UCYMG0fE",
+  authDomain: "gridlock-mind-battle2.firebaseapp.com",
+  databaseURL: "https://gridlock-mind-battle2-default-rtdb.firebaseio.com",
+  projectId: "gridlock-mind-battle2",
+  storageBucket: "gridlock-mind-battle2.firebasestorage.app",
+  messagingSenderId: "772800358373",
+  appId: "1:772800358373:web:68118297e5b43e81b6710c"
+};
+
+let db=null, fbReady=false;
+try{
+  if(typeof firebase!=='undefined'){
+    firebase.initializeApp(firebaseConfig);
+    db=firebase.database();
+    fbReady=true;
+  }
+}catch(e){ fbReady=false; }
+
+/* ===== CONFIG ===== */
+const N=7, MAX_TURNS=80, WIN_CRYSTALS=3, WALLS_START=6;
+const DIRS=[[-1,0],[1,0],[0,-1],[0,1]];
+const START=[{r:6,c:0},{r:0,c:6}];
+const EXIT=[{r:0,c:0},{r:6,c:6}];
+const LAYOUT={
+  crystal:[[1,2],[5,4],[4,1],[2,5],[4,3],[2,3]],
+  bonus:[[3,3]],
+  shield:[[1,5],[5,1]],
+  reveal:[[3,1],[3,5]]
+};
+const GLYPH={crystal:'◆',bonus:'★',shield:'◈',reveal:'◉'};
+
+/* ===== HELPERS ===== */
+const $=id=>document.getElementById(id);
+const esc=s=>String(s).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+const inB=(r,c)=>r>=0&&r<N&&c>=0&&c<N;
+const isAt=(p,r,c)=>p.r===r&&p.c===c;
+const toArr=x=>Array.isArray(x)?x:Object.keys(x||{}).sort((a,b)=>a-b).map(k=>x[k]);
+const CODE_CHARS='ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+function genCode(){
+  let s='';
+  for(let i=0;i<6;i++) s+=CODE_CHARS[Math.floor(Math.random()*CODE_CHARS.length)];
+  return s;
+}
+function myUid(){
+  let id=null;
+  try{ id=localStorage.getItem('gridlock_uid'); }catch(e){}
+  if(!id){
+    id='u'+Math.random().toString(36).slice(2,10)+Date.now().toString(36);
+    try{ localStorage.setItem('gridlock_uid',id); }catch(e){}
+  }
+  return id;
+}
+let UID=myUid();
+
+/* ===== FIREBASE AUTH (Google login) ===== */
+let auth=null;
+try{
+  if(fbReady && firebase.auth){ auth=firebase.auth(); }
+}catch(e){ auth=null; }
+
+function setLoginUI(user){
+  const btn=$('btnLogin'), lbl=$('userLabel');
+  if(!btn) return;
+  if(user){
+    lbl.textContent='Logged in as '+(user.displayName||user.email||'Google user');
+    btn.textContent='Logout';
+  }else{
+    lbl.textContent='Online ke liye Google se login karein';
+    btn.textContent='Login with Google';
+  }
+}
+
+if(auth){
+  auth.onAuthStateChanged(user=>{
+    if(user){ UID=user.uid; }
+    else { UID=myUid(); }
+    setLoginUI(user);
+  });
+}
+
+async function loginGoogle(){
+  if(location.protocol==='file:'){
+    setMenuNote('Google login file:// par kaam nahi karta. App ko https par host karna hoga.');
+    return;
+  }
+  if(!auth){ setMenuNote('Firebase Auth load nahi hua. Internet check karein.'); return; }
+  const provider=new firebase.auth.GoogleAuthProvider();
+  try{
+    await auth.signInWithPopup(provider);
+    setMenuNote('');
+  }catch(e){
+    if(e.code==='auth/popup-blocked'){
+      try{ await auth.signInWithRedirect(provider); }
+      catch(err){ setMenuNote('Login failed: '+(err.code||err.message)); }
+    }else if(e.code!=='auth/popup-closed-by-user'){
+      setMenuNote('Login failed: '+(e.code||e.message));
+    }
+  }
+}
+
+async function logoutGoogle(){
+  try{ if(auth) await auth.signOut(); }catch(e){}
+  setMenuNote('Logged out. Local 2-Player still works.');
+}
+
+/* ===== SETTINGS / STORAGE ===== */
+let settings=loadSettings();
+function loadSettings(){
+  const s={mute:false,names:['Blue','Pink'],wins:{}};
+  try{
+    const raw=localStorage.getItem('gridlock_v1');
+    if(raw){
+      const d=JSON.parse(raw);
+      if(Array.isArray(d.names)&&d.names.length===2) s.names=d.names;
+      if(d.wins&&typeof d.wins==='object') s.wins=d.wins;
+      s.mute=!!d.mute;
+    }
+  }catch(e){}
+  return s;
+}
+function saveSettings(){
+  try{ localStorage.setItem('gridlock_v1',JSON.stringify(settings)); }catch(e){}
+}
+
+/* ===== SOUND ===== */
+let actx=null;
+function tone(freq,dur,type='sine',vol=0.12,delay=0){
+  if(settings.mute) return;
+  try{
+    actx=actx||new (window.AudioContext||window.webkitAudioContext)();
+    const t=actx.currentTime+delay;
+    const o=actx.createOscillator(), g=actx.createGain();
+    o.type=type; o.frequency.value=freq;
+    g.gain.setValueAtTime(vol,t);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g); g.connect(actx.destination);
+    o.start(t); o.stop(t+dur+0.02);
+  }catch(e){}
+}
+function sfx(name){
+  if(name==='move') tone(520,.12);
+  else if(name==='wall') tone(180,.22,'square',.06);
+  else if(name==='pickup') tone(760,.14,'triangle');
+  else if(name==='crystal'){tone(880,.15);tone(1320,.2,'sine',.12,.09);}
+  else if(name==='win'){[523,659,784,1047].forEach((f,i)=>tone(f,.3,'triangle',.14,i*.12));}
+  else if(name==='lose'){tone(300,.25,'sawtooth',.06);tone(220,.35,'sawtooth',.06,.2);}
+}
+
+/* ===== GAME STATE ===== */
+let G=null, mode='move', paused=false;
+
+function freshGame(){
+  const s={
+    grid:Array.from({length:N},()=>Array(N).fill(null)),
+    walls:Array.from({length:N},()=>Array(N).fill(false)),
+    p:[0,1].map(i=>({r:START[i].r,c:START[i].c,crystals:0,walls:WALLS_START,shield:0,reveal:0,name:settings.names[i]})),
+    turn:0, moves:0, over:false, winner:-1, reason:'', msg:'Blue starts. Collect 3 crystals and reach your exit.'
+  };
+  for(const k in LAYOUT) LAYOUT[k].forEach(([r,c])=>{ s.grid[r][c]=k; });
+  return s;
+}
+
+function serialize(s){
+  const grid=[], walls=[];
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    grid.push(s.grid[r][c]||'');
+    walls.push(s.walls[r][c]?1:0);
+  }
+  return {
+    grid, walls,
+    p:s.p.map(p=>({r:p.r,c:p.c,crystals:p.crystals,walls:p.walls,shield:p.shield,reveal:p.reveal,name:p.name})),
+    turn:s.turn, moves:s.moves, over:!!s.over, winner:s.winner, reason:s.reason||'', msg:s.msg||''
+  };
+}
+function deserialize(d){
+  const grid=toArr(d.grid), walls=toArr(d.walls), pl=toArr(d.p);
+  const s={
+    grid:Array.from({length:N},()=>Array(N).fill(null)),
+    walls:Array.from({length:N},()=>Array(N).fill(false)),
+    p:pl.map(p=>({...p})),
+    turn:d.turn, moves:d.moves, over:!!d.over, winner:d.winner, reason:d.reason||'', msg:d.msg||''
+  };
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    const k=r*N+c;
+    s.grid[r][c]=grid[k]||null;
+    s.walls[r][c]=!!walls[k];
+  }
+  return s;
+}
+
+function occupied(s,r,c,except){
+  return s.p.some((p,i)=>i!==except&&isAt(p,r,c));
+}
+
+function pathLen(s,i){
+  const start=[s.p[i].r,s.p[i].c], ex=EXIT[i];
+  const seen=Array.from({length:N},()=>Array(N).fill(false));
+  let frontier=[start]; seen[start[0]][start[1]]=true; let d=0;
+  while(frontier.length){
+    const next=[];
+    for(const [r,c] of frontier){
+      if(r===ex.r&&c===ex.c) return d;
+      for(const [dr,dc] of DIRS){
+        const nr=r+dr, nc=c+dc;
+        if(inB(nr,nc)&&!seen[nr][nc]&&!s.walls[nr][nc]){
+          seen[nr][nc]=true; next.push([nr,nc]);
+        }
+      }
+    }
+    frontier=next; d++;
+  }
+  return -1;
+}
+
+function legalMoves(s,i){
+  const p=s.p[i], out=[];
+  for(const [dr,dc] of DIRS){
+    const nr=p.r+dr, nc=p.c+dc;
+    if(!inB(nr,nc)||occupied(s,nr,nc,i)) continue;
+    if(!s.walls[nr][nc]) out.push({r:nr,c:nc,breaks:false});
+    else if(p.shield>0) out.push({r:nr,c:nc,breaks:true});
+  }
+  return out;
+}
+
+function canPlaceWall(s,r,c){
+  if(!inB(r,c)||s.walls[r][c]||s.grid[r][c]||occupied(s,r,c,-1)) return false;
+  if(EXIT.some(e=>isAt(e,r,c))||START.some(e=>isAt(e,r,c))) return false;
+  s.walls[r][c]=true;
+  const ok=pathLen(s,0)>=0 && pathLen(s,1)>=0;
+  s.walls[r][c]=false;
+  return ok;
+}
+
+function setMsg(t){ if(G) G.msg=t; }
+
+function collect(s,i){
+  const p=s.p[i], t=s.grid[p.r][p.c];
+  if(!t) return;
+  s.grid[p.r][p.c]=null;
+  if(t==='crystal'){ p.crystals+=1; setMsg('Crystal collected! +1'); sfx('crystal'); }
+  else if(t==='bonus'){ p.crystals+=2; setMsg('Bonus crystal! +2'); sfx('crystal'); }
+  else if(t==='shield'){ p.shield+=1; setMsg('Shield gained. You can break one wall.'); sfx('pickup'); }
+  else if(t==='reveal'){ p.reveal+=1; setMsg('Scan power gained. Use Scan on your turn.'); sfx('pickup'); }
+}
+
+/* ===== ONLINE STATE ===== */
+const O={
+  active:false, code:null, me:-1, ref:null, status:'',
+  lastV:-1, shownResult:false, inGame:false, queued:false, cancel:false, connFn:null
+};
+
+// True when it is online and not this device's turn
+function notMyTurn(){ return O.active && G && G.turn!==O.me; }
+
+function pushState(){
+  if(!O.active||!O.ref||!G) return;
+  O.lastV+=1;
+  const payload={status:G.over?'over':'playing', state:{v:O.lastV, ...serialize(G)}};
+  O.ref.update(payload).catch(()=>{ setMsg('Connection problem. Your move may not have synced yet.'); render(); });
+}
+
+function attachRoom(code,me,title){
+  detachRoom(false);
+  O.active=true; O.code=code; O.me=me; O.lastV=-1;
+  O.shownResult=false; O.inGame=false; O.status='';
+  $('onlineTitle').textContent=title||'ONLINE';
+  O.ref=db.ref('rooms/'+code);
+  const presRef=O.ref.child('players/'+me+'/online');
+  O.connFn=db.ref('.info/connected').on('value',snap=>{
+    if(snap.val()===true){
+      presRef.onDisconnect().set(false);
+      presRef.set(true);
+    }
+  });
+  O.ref.on('value',snap=>onRoom(snap.val()));
+}
+
+// markOffline=false is used when the room is being deleted by us
+function detachRoom(markOffline){
+  if(!O.active) return;
+  try{
+    O.ref.off();
+    db.ref('.info/connected').off('value');
+    if(markOffline && O.code && O.status!=='waiting'){
+      O.ref.child('players/'+O.me+'/online').set(false).catch(()=>{});
+    }
+  }catch(e){}
+  O.active=false;
+}
+
+function onRoom(room){
+  if(!O.active) return;
+  if(!room){
+    setMenuNote('The room was closed.');
+    leaveOnline(false);
+    return;
+  }
+  O.status=room.status||'';
+  const pl=room.players||{};
+
+  if(room.status==='waiting'){
+    $('onlineCode').textContent=O.code;
+    $('onlineStatus').textContent='Waiting for an opponent… share this code.';
+    if(!O.inGame) show('online');
+    return;
+  }
+
+  const names=[pl[0]?pl[0].name:'Blue', pl[1]?pl[1].name:'Pink'];
+
+  // Apply new state from the server (own writes are skipped by version)
+  if(room.state && room.state.v>O.lastV){
+    O.lastV=room.state.v;
+    G=deserialize(room.state);
+    G.p[0].name=names[0]; G.p[1].name=names[1];
+    if(!G.over) O.shownResult=false;
+    O.inGame=true;
+    show('game');
+    render();
+    if(G.over && !O.shownResult){
+      O.shownResult=true;
+      setTimeout(showResult,700);
+    }
+  }
+
+  // Opponent presence
+  if(O.inGame&&G){
+    const oppIdx=1-O.me, opp=pl[oppIdx];
+    const oppName=names[oppIdx];
+    let txt;
+    if(!opp) txt='waiting';
+    else txt=opp.online?'online':'disconnected, reconnecting…';
+    $('onlineBadge').style.display='block';
+    $('onlineBadge').textContent=`Room ${O.code} · ${oppName} ${txt}`;
+  }
+
+  // Host restarts the match once both players asked for a rematch
+  if(O.me===0 && room.status==='over' && room.rematch && room.rematch[0] && room.rematch[1]){
+    O.lastV+=1;
+    const fresh=serialize(freshGame());
+    O.ref.update({status:'playing', rematch:null, state:{v:O.lastV, ...fresh}});
+  }
+}
+
+function setMenuNote(t){ $('menuNote').textContent=t; }
+
+function requireNet(){
+  if(!fbReady||!db){
+    setMenuNote('Online needs internet and Firebase. Local 2-Player still works.');
+    return false;
+  }
+  if(!auth||!auth.currentUser){
+    setMenuNote('Online ke liye pehle Google se login karein.');
+    return false;
+  }
+  return true;
+}
+
+async function createPrivate(){
+  if(!requireNet()) return;
+  const code=genCode();
+  try{
+    await db.ref('rooms/'+code).set({
+      status:'waiting', createdAt:Date.now(),
+      players:{0:{uid:UID,name:settings.names[0],online:true}}
+    });
+    O.queued=false;
+    attachRoom(code,0,'PRIVATE ROOM');
+  }catch(e){
+    setMenuNote('Could not create room. Check internet.');
+    show('menu');
+  }
+}
+
+async function joinRoomCode(code){
+  const ref=db.ref('rooms/'+code);
+  // Read the real room first. A transaction on an uncached room sees null and would abort at once.
+  const snap=await ref.once('value');
+  if(!snap.exists()) return false;
+  const res=await ref.transaction(room=>{
+    if(!room) return;
+    if(room.status!=='waiting') return;
+    if(room.players && room.players[1]) return;
+    room.players=room.players||{};
+    room.players[1]={uid:UID,name:settings.names[1],online:true};
+    room.status='playing';
+    room.state={v:1, ...serialize(freshGame())};
+    return room;
+  });
+  if(!res.committed) return false;
+  attachRoom(code,1,'JOINED ROOM');
+  return true;
+}
+
+async function joinByCode(){
+  if(!requireNet()) return;
+  const code=$('roomCode').value.trim().toUpperCase();
+  if(code.length!==6){ setMenuNote('Type the 6-character room code.'); return; }
+  setMenuNote('Joining…');
+  try{
+    const ok=await joinRoomCode(code);
+    if(ok){ setMenuNote(''); }
+    else setMenuNote('Room not found, full, or already started.');
+  }catch(e){
+    setMenuNote('Could not join. Check internet.');
+  }
+}
+
+async function quickMatch(){
+  if(!requireNet()) return;
+  O.cancel=false;
+  const myCode=genCode();
+  $('onlineTitle').textContent='QUICK MATCH';
+  $('onlineCode').textContent='';
+  $('onlineStatus').textContent='Searching for an opponent…';
+  show('online');
+  try{
+    await db.ref('rooms/'+myCode).set({
+      status:'waiting', createdAt:Date.now(),
+      players:{0:{uid:UID,name:settings.names[0],online:true}}
+    });
+    const q=db.ref('quick/waiting');
+    const res=await q.transaction(cur=>cur===null?{code:myCode,uid:UID,t:Date.now()}:undefined);
+    const cur=res.snapshot.val();
+
+    if(O.cancel){
+      await q.transaction(c=>(c&&c.code===myCode)?null:undefined);
+      await db.ref('rooms/'+myCode).remove();
+      return;
+    }
+
+    if(res.committed && cur && cur.code===myCode){
+      // Nobody waiting: we wait in the queue
+      O.queued=true;
+      attachRoom(myCode,0,'QUICK MATCH');
+      return;
+    }
+
+    // Someone is waiting: claim them and join their room
+    await db.ref('rooms/'+myCode).remove();
+    if(!cur){ setMenuNote('Please try Quick Match again.'); show('menu'); return; }
+    await q.transaction(c=>(c&&c.code===cur.code)?null:undefined);
+    const ok=await joinRoomCode(cur.code);
+    if(!ok){
+      setMenuNote('That opponent left. Try Quick Match again.');
+      show('menu');
+    }
+  }catch(e){
+    setMenuNote('Quick Match failed. Check internet.');
+    show('menu');
+  }
+}
+
+async function leaveOnline(showMenu=true){
+  O.cancel=true;
+  if(O.queued){
+    try{ await db.ref('quick/waiting').transaction(c=>(c&&c.code===O.code)?null:undefined); }catch(e){}
+    O.queued=false;
+  }
+  const wasWaiting=O.status==='waiting';
+  const code=O.code;
+  detachRoom(!wasWaiting);
+  if(wasWaiting&&code){
+    try{ await db.ref('rooms/'+code).remove(); }catch(e){}
+  }
+  O.code=null; O.inGame=false; O.status='';
+  G=null;
+  setPaused(false);
+  if(showMenu) show('menu');
+}
+
+/* ===== ACTIONS ===== */
+function onCell(r,c){
+  if(!G||G.over||paused) return;
+  if(notMyTurn()){ setMsg("Opponent's turn. Please wait for their move."); render(); return; }
+  const i=G.turn, p=G.p[i];
+
+  if(mode==='wall'){
+    if(p.walls<=0){ setMsg('No walls left. Switch to Move.'); render(); return; }
+    if(!canPlaceWall(G,r,c)){
+      setMsg('Invalid spot. Walls cannot trap a player or sit on pawns, tiles or exits.');
+      render(); return;
+    }
+    G.walls[r][c]=true; p.walls--;
+    setMsg(`${p.name} placed a wall.`);
+    sfx('wall');
+    endTurn(); return;
+  }
+
+  const mv=legalMoves(G,i).find(m=>m.r===r&&m.c===c);
+  if(!mv){
+    setMsg('Move one tile up, down, left or right onto an open tile.');
+    render(); return;
+  }
+  if(mv.breaks){
+    G.walls[r][c]=false; p.shield--;
+    setMsg('Shield broke a wall!');
+  }
+  p.r=r; p.c=c;
+  sfx('move');
+  collect(G,i);
+
+  const atExit=isAt(EXIT[i],r,c);
+  if(atExit && p.crystals>=WIN_CRYSTALS){ finish(i,'win'); return; }
+  if(atExit) setMsg(`At your exit with ${p.crystals}/${WIN_CRYSTALS} crystals. Collect ${WIN_CRYSTALS-p.crystals} more.`);
+  endTurn();
+}
+
+function useScan(){
+  if(!G||G.over||paused) return;
+  if(notMyTurn()){ setMsg("Opponent's turn. Please wait."); render(); return; }
+  const p=G.p[G.turn], o=1-G.turn;
+  if(p.reveal<=0) return;
+  p.reveal--;
+  const d=pathLen(G,o);
+  const opp=G.p[o];
+  setMsg(d>=0
+    ? `Scan: ${opp.name} is ${d} steps from its exit and has ${opp.crystals}/${WIN_CRYSTALS} crystals.`
+    : `Scan: ${opp.name} has no path to its exit.`);
+  sfx('pickup');
+  pushState();
+  render();
+}
+
+function passTurn(){
+  if(!G||G.over||paused) return;
+  if(notMyTurn()){ setMsg("Opponent's turn. Please wait."); render(); return; }
+  setMsg(`${G.p[G.turn].name} passed.`);
+  endTurn();
+}
+
+function endTurn(){
+  G.moves++;
+  G.turn=1-G.turn;
+  mode='move';
+  if(G.moves>=MAX_TURNS){
+    const a=G.p[0].crystals, b=G.p[1].crystals;
+    finish(a>b?0:(b>a?1:-1),'limit');
+    return;
+  }
+  pushState();
+  render();
+}
+
+function finish(w,reason){
+  G.over=true; G.winner=w; G.reason=reason;
+  if(w>=0){
+    const n=G.p[w].name;
+    settings.wins[n]=(settings.wins[n]||0)+1;
+    saveSettings();
+    sfx('win');
+  } else sfx('lose');
+  if(O.active) O.shownResult=true;
+  pushState();
+  render();
+  setTimeout(showResult,700);
+}
+
+/* ===== RENDERING ===== */
+function buildBoard(){
+  const board=$('board');
+  for(let r=0;r<N;r++) for(let c=0;c<N;c++){
+    const d=document.createElement('div');
+    d.className='cell';
+    d.dataset.r=r; d.dataset.c=c;
+    board.appendChild(d);
+  }
+}
+
+function placePawn(el,p){
+  el.style.left=(p.c*100/N)+'%';
+  el.style.top=(p.r*100/N)+'%';
+  el.querySelector('span').textContent=(p.name||'?').charAt(0).toUpperCase();
+}
+
+function renderBoard(){
+  const hints=new Set();
+  if(!G.over && !notMyTurn()){
+    if(mode==='move') legalMoves(G,G.turn).forEach(m=>hints.add(m.r*N+m.c));
+    else for(let r=0;r<N;r++) for(let c=0;c<N;c++) if(canPlaceWall(G,r,c)) hints.add(r*N+c);
+  }
+  document.querySelectorAll('#board .cell').forEach(el=>{
+    const r=+el.dataset.r, c=+el.dataset.c, t=G.grid[r][c];
+    let cls='cell';
+    if(G.walls[r][c]) cls+=' wall';
+    if(t) cls+=' t-'+t;
+    if(isAt(EXIT[0],r,c)) cls+=' exit-b';
+    if(isAt(EXIT[1],r,c)) cls+=' exit-p';
+    if(hints.has(r*N+c)) cls+=' hint';
+    el.className=cls;
+    el.textContent=t?GLYPH[t]:'';
+  });
+  placePawn($('pawnB'),G.p[0]);
+  placePawn($('pawnP'),G.p[1]);
+}
+
+function renderCards(){
+  [0,1].forEach(i=>{
+    const p=G.p[i], card=$(i?'cardP':'cardB');
+    card.classList.toggle('active',!G.over&&G.turn===i);
+    card.innerHTML=
+      `<div class="pname">${esc(p.name)}${O.active&&O.me===i?' (you)':''}</div>`+
+      `<div class="stat">◆ Crystals ${p.crystals}/${WIN_CRYSTALS}</div>`+
+      `<div class="stat">▦ Walls ${p.walls}</div>`+
+      `<div class="stat">◈ ${p.shield} · ◉ ${p.reveal}</div>`;
+  });
+}
+
+function render(){
+  if(!G) return;
+  renderBoard();
+  renderCards();
+  const p=G.p[G.turn];
+  const tl=$('turnLabel');
+  tl.textContent=G.over?'MATCH OVER':`${p.name.toUpperCase()}'S TURN`;
+  tl.className='turn '+(G.turn?'pink':'blue');
+  $('turnCount').textContent=`Turn ${Math.min(G.moves+1,MAX_TURNS)} / ${MAX_TURNS}`;
+  $('modeLabel').textContent=mode==='wall'
+    ? `Wall mode · ${p.walls} left · tap an empty tile`
+    : `Move mode · ${p.walls} walls left`;
+  $('btnMove').classList.toggle('on',mode==='move');
+  $('btnWall').classList.toggle('on',mode==='wall');
+  const blocked=G.over||notMyTurn();
+  $('btnScan').disabled=blocked||p.reveal<=0;
+  $('btnPass').disabled=blocked;
+  $('btnWall').disabled=blocked;
+  $('btnMove').disabled=blocked;
+  $('msg').textContent=G.msg;
+}
+
+/* ===== SCREENS ===== */
+function show(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.toggle('active',s.id===id));
+}
+
+function startGame(){
+  G=freshGame(); mode='move'; setPaused(false);
+  $('onlineBadge').style.display='none';
+  show('game'); render();
+}
+
+function setPaused(v){
+  paused=v;
+  $('pauseOv').classList.toggle('show',v);
+  $('btnRestart').disabled=O.active;
+}
+
+function showResult(){
+  if(!G) return;
+  const a=G.p[0], b=G.p[1];
+  const t=$('resTitle');
+  if(G.winner<0){
+    t.textContent='DRAW'; t.className='res-title draw';
+    $('resSub').textContent = G.reason==='limit'
+      ? 'Turn limit reached. Both players have the same crystals.'
+      : 'Draw.';
+  }else{
+    const w=G.p[G.winner];
+    t.textContent=`${w.name.toUpperCase()} WINS`;
+    t.className='res-title '+(G.winner?'pink':'blue');
+    $('resSub').textContent = G.reason==='limit'
+      ? 'Turn limit reached. Most crystals wins.'
+      : 'Crystals collected and exit reached!';
+  }
+  $('resStats').innerHTML=
+    `${esc(a.name)}: ${a.crystals} crystals · ${WALLS_START-a.walls} walls used<br>`+
+    `${esc(b.name)}: ${b.crystals} crystals · ${WALLS_START-b.walls} walls used`;
+  $('btnRematch').disabled=false;
+  $('btnRematch').textContent='Rematch';
+  show('result');
+}
+
+function renderSettings(){
+  $('nameB').value=settings.names[0];
+  $('nameP').value=settings.names[1];
+  $('btnMute').textContent='Sound: '+(settings.mute?'Off':'On');
+  const rows=Object.entries(settings.wins).sort((x,y)=>y[1]-x[1]);
+  $('scoreList').innerHTML = rows.length
+    ? rows.map(([n,w])=>`<div class="score-row"><span>${esc(n)}</span><span>${w} win${w===1?'':'s'}</span></div>`).join('')
+    : '<p style="text-align:center;color:var(--muted)">No wins yet. Play a match!</p>';
+}
+
+/* ===== EVENT WIRING ===== */
+document.addEventListener('DOMContentLoaded',()=>{});
+buildBoard();
+show('menu');
+
+$('btnLocal').onclick=()=>{ setMenuNote(''); startGame(); };
+$('btnQuick').onclick=()=>{ setMenuNote(''); quickMatch(); };
+$('btnCreate').onclick=()=>{ setMenuNote(''); createPrivate(); };
+$('btnJoin').onclick=()=>{ joinByCode(); };
+$('btnCancelOnline').onclick=()=>{ leaveOnline(true); };
+$('btnLogin').onclick=()=>{
+  if(auth&&auth.currentUser) logoutGoogle();
+  else loginGoogle();
+};
+$('btnRules').onclick=()=>show('rules');
+$('btnSettings').onclick=()=>{ renderSettings(); show('settings'); };
+document.querySelectorAll('[data-go]').forEach(b=>b.onclick=()=>show(b.dataset.go));
+
+$('nameB').oninput=e=>{ settings.names[0]=e.target.value.trim()||'Blue'; saveSettings(); if(G) G.p[0].name=settings.names[0]; };
+$('nameP').oninput=e=>{ settings.names[1]=e.target.value.trim()||'Pink'; saveSettings(); if(G) G.p[1].name=settings.names[1]; };
+$('btnMute').onclick=()=>{ settings.mute=!settings.mute; saveSettings(); renderSettings(); };
+$('btnResetScore').onclick=()=>{ settings.wins={}; saveSettings(); renderSettings(); };
+
+$('board').addEventListener('click',e=>{
+  const el=e.target.closest('.cell');
+  if(el) onCell(+el.dataset.r,+el.dataset.c);
+});
+
+$('btnMove').onclick=()=>{ if(!G||G.over||paused) return; mode='move'; render(); };
+$('btnWall').onclick=()=>{
+  if(!G||G.over||paused) return;
+  mode='wall';
+  if(G.p[G.turn].walls<=0) setMsg('No walls left for this player.');
+  render();
+};
+$('btnScan').onclick=useScan;
+$('btnPass').onclick=passTurn;
+
+$('btnPause').onclick=()=>{ if(G&&!G.over) setPaused(true); };
+$('btnResume').onclick=()=>setPaused(false);
+$('btnRestart').onclick=()=>{ if(!O.active) startGame(); };
+$('btnQuit').onclick=()=>{ leaveOnline(true); };
+
+$('btnRematch').onclick=()=>{
+  if(O.active){
+    if(!O.ref) return;
+    O.ref.child('rematch/'+O.me).set(true);
+    $('btnRematch').textContent='Waiting for opponent…';
+    $('btnRematch').disabled=true;
+    return;
+  }
+  startGame();
+};
+$('btnResultMenu').onclick=()=>{ leaveOnline(true); };
+</script>
+</body>
+</html>
